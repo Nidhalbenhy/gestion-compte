@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-app
+spec:
+  replicas: 3  # Le nombre de réplicas pour l'application
+  selector:
+    matchLabels:
+      app: springboot-app
+  template:
+    metadata:
+      labels:
+        app: springboot-app
+    spec:
+      containers:
+        - name: springboot-app
+          image: nidhal12345/docker-hub-gestion-compte:v1  # L'image de votre application
+          ports:
+            - containerPort: 8080  # Le port que votre Spring Boot écoute
