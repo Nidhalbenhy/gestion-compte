@@ -6,8 +6,23 @@ pipeline {
         DOCKER_REGISTRY = 'https://registry.hub.docker.com'
         DOCKER_TAG = 'latest'
         GIT_REPO = 'https://github.com/Nidhalbenhy/gestion-compte'  // Change le lien de ton repo GitHub
+        JAVA_OPTS = '-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.LAUNCH_DIAGNOSTICS=true'  // Pour plus de logs
+        PATH = "/usr/local/bin:$PATH"  // Ajoute un chemin explicite pour Docker
     }
+
     stages {
+
+        stage('Check Docker') {
+            steps {
+                script {
+                    // Ajoute un diagnostic pour vérifier si Docker est installé et accessible
+                    echo "Checking Docker installation..."
+                    sh 'which docker'  // Vérifie le chemin de Docker
+                    sh 'docker --version'  // Affiche la version de Docker
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'master', url: "${GIT_REPO}"  // Clone ton repo Git
@@ -18,6 +33,7 @@ pipeline {
             steps {
                 script {
                     // Construire l'image Docker
+                    echo "Building Docker image..."
                     sh 'docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .'
                 }
             }
@@ -27,6 +43,7 @@ pipeline {
             steps {
                 script {
                     // Connecte-toi à DockerHub avec les credentials Jenkins
+                    echo "Logging in to DockerHub..."
                     docker.withRegistry(DOCKER_REGISTRY, DOCKERHUB_CREDENTIALS) {
                         sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                     }
@@ -38,6 +55,7 @@ pipeline {
             steps {
                 script {
                     // Pousse l'image Docker vers DockerHub
+                    echo "Pushing Docker image to DockerHub..."
                     docker.withRegistry(DOCKER_REGISTRY, DOCKERHUB_CREDENTIALS) {
                         sh 'docker push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}'
                     }
@@ -49,17 +67,17 @@ pipeline {
             steps {
                 script {
                     // Exemple Deploy avec Kubernetes
-
-                       sh 'kubectl apply -f springboot-deployment.yaml'
-                       sh 'kubectl apply -f springboot-service.yaml'
-
-                    // Ou si tu utilises un autre service de load balancing, adapte le déploiement
+                    echo "Deploying on Load Balancer..."
+                    sh 'kubectl apply -f springboot-deployment.yaml'
+                    sh 'kubectl apply -f springboot-service.yaml'
                 }
             }
         }
     }
+
     post {
         always {
+            echo "Cleaning workspace..."
             cleanWs()  // Nettoyer l'espace de travail Jenkins après chaque exécution
         }
     }
