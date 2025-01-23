@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: springboot-app
-          image: nidhal12345/docker-hub-gestion-compte:v1  # L'image de votre application
+          image: nidhal12345/docker-hub-gestion-compte:latest  # L'image de votre application
           ports:
-            - containerPort: 8080  # Le port que votre Spring Boot écoute
+            - containerPort: 8084  # Le port que votre Spring Boot écoute

@@ -17,7 +17,7 @@ public class GestionCompteApplication {
 
 
 	@GetMapping("/hello")
-	public String sayHello(@RequestParam(value = "myName", defaultValue = "World") String name) {
+	public String sayHello(@RequestParam(value = "myName", defaultValue = "Worldss") String name) {
 		return String.format("Hello %s!", name);
 	}
 

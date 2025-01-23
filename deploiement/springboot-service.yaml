@@ -9,4 +9,4 @@ spec:
   ports:
     - protocol: TCP
       port: 80  # Le port externe du service (accessible via le LoadBalancer)
-      targetPort: 8080  # Le port interne où l'application Spring Boot écoute
+      targetPort: 8084  # Le port interne où l'application Spring Boot écoute

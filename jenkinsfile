@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_IMAGE_NAME = 'nidhal12345/docker-hub-gestion-compte'  // Change selon ton nom d'image Docker
+        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'  // Référence les identifiants DockerHub dans Jenkins
+        DOCKER_REGISTRY = 'https://registry.hub.docker.com'
+        DOCKER_TAG = 'latest'
+        GIT_REPO = 'https://github.com/Nidhalbenhy/gestion-compte'  // Change le lien de ton repo GitHub
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master', url: "${GIT_REPO}"  // Clone ton repo Git
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Construire l'image Docker
+                    sh 'docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .'
+                }
+            }
+        }
+
+        stage('Login to DockerHub') {
+            steps {
+                script {
+                    // Connecte-toi à DockerHub avec les credentials Jenkins
+                    docker.withRegistry(DOCKER_REGISTRY, DOCKERHUB_CREDENTIALS) {
+                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                    }
+                }
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    // Pousse l'image Docker vers DockerHub
+                    docker.withRegistry(DOCKER_REGISTRY, DOCKERHUB_CREDENTIALS) {
+                        sh 'docker push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy on Load Balancer') {
+            steps {
+                script {
+                    // Exemple Deploy avec Kubernetes
+
+                       sh 'kubectl apply -f springboot-deployment.yaml'
+                       sh 'kubectl apply -f springboot-service.yaml'
+
+                    // Ou si tu utilises un autre service de load balancing, adapte le déploiement
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()  // Nettoyer l'espace de travail Jenkins après chaque exécution
+        }
+    }
+}
